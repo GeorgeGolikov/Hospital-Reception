@@ -37,11 +37,11 @@ public class DiagnosisServiceImpl implements DiagnosisService
     }
 
     @Override
-    public boolean deleteDiagnosis(Diagnosis diagnosis)
+    public boolean deleteDiagnosis(Integer id)
     {
-        if (diagnosisRepository.existsById(diagnosis.getId()))
+        if (diagnosisRepository.existsById(id))
         {
-            diagnosisRepository.delete(diagnosis);
+            diagnosisRepository.delete(diagnosisRepository.findById(id).get());
             return true;
         }
         else return false;

@@ -39,11 +39,11 @@ public class PeopleServiceImpl implements PeopleService
     }
 
     @Override
-    public boolean deletePerson(Person person)
+    public boolean deletePerson(Integer id)
     {
-        if (peopleRepository.existsById(person.getId()))
+        if (peopleRepository.existsById(id))
         {
-            peopleRepository.delete(person);
+            peopleRepository.delete(peopleRepository.findById(id).get());
             return true;
         }
         else return false;

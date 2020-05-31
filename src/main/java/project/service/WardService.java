@@ -8,6 +8,6 @@ public interface WardService
     List<Ward> listOfWards();
     Ward findWard(int id);
     void addWard(Ward ward);
-    boolean deleteWard(Ward ward);
+    boolean deleteWard(Integer id);
     boolean editWard(Integer id, Ward newWard);
 }

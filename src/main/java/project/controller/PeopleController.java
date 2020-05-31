@@ -38,10 +38,10 @@ public class PeopleController
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/deletePerson")
-    public ResponseEntity<?> deletePerson(@RequestBody Person person)
+    @DeleteMapping("/deletePerson/{id}")
+    public ResponseEntity<?> deletePerson(@PathVariable(name = "id") int id)
     {
-        final boolean deleted = peopleService.deletePerson(person);
+        final boolean deleted = peopleService.deletePerson(id);
         return deleted
                 ? new ResponseEntity<>(HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);

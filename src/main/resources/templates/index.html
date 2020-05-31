@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf8">
+    <title>Приёмное отделение больницы</title>
+
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+
+        input[type=text] {
+            padding:5px;
+            border:2px solid #ccc;
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+        }
+
+        input[type=text]:focus {
+            border-color:#333;
+        }
+
+        button {
+
+        }
+    </style>
+</head>
+<body id="my_body">
+
+<h1>Hospital Reception</h1>
+
+<form action="#">
+    <input id="username" placeholder="Логин">
+    <input id="password" placeholder="Пароль">
+    <button onclick="login()">Login</button>
+</form>
+
+<script>
+    function login()
+    {
+        let username= document.getElementById("username").value;
+        let password= document.getElementById("password").value;
+
+        fetch("http://localhost:8080/hospital/auth/signin", {
+            method: "POST",
+            headers: {
+                'Content-Type' : 'application/json'
+            },
+            body: JSON.stringify({
+                userName: username,
+                password: password
+            })
+        })
+            .then((response) => {
+                if (response.status >= 400){
+                    return Promise.reject();
+                }
+                return response.json();
+            })
+            .then((j) => JSON.stringify(j))
+            .then((data) => JSON.parse(data))
+            .then((obj) => localStorage.setItem("Authentication", "Bearer " + obj["token"]))
+            .then(() => {
+                if (username === "user") window.location.href = "/user.html";
+                else if (username === "admin") window.location.href = "/admin.html";
+            })
+            .catch(() => alert("User not found!"));
+    }
+</script>
+
+</body>
+</html>

@@ -38,10 +38,10 @@ public class WardController
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/deleteWard")
-    public ResponseEntity<?> deleteWard(@RequestBody Ward ward)
+    @DeleteMapping("/deleteWard/{id}")
+    public ResponseEntity<?> deleteWard(@PathVariable(name = "id") int id)
     {
-        final boolean deleted = wardService.deleteWard(ward);
+        final boolean deleted = wardService.deleteWard(id);
         return deleted
                 ? new ResponseEntity<>(HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);

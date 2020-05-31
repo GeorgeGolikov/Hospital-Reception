@@ -38,10 +38,10 @@ public class DiagnosisController
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/deleteDiagnosis")
-    public ResponseEntity<?> deleteDiagnosis(@RequestBody Diagnosis diagnosis)
+    @DeleteMapping("/deleteDiagnosis/{id}")
+    public ResponseEntity<?> deleteDiagnosis(@PathVariable(name = "id") int id)
     {
-        final boolean deleted = diagnosisService.deleteDiagnosis(diagnosis);
+        final boolean deleted = diagnosisService.deleteDiagnosis(id);
         return deleted
                 ? new ResponseEntity<>(HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);

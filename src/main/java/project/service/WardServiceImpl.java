@@ -37,11 +37,11 @@ public class WardServiceImpl implements WardService
     }
 
     @Override
-    public boolean deleteWard(Ward ward)
+    public boolean deleteWard(Integer id)
     {
-        if (wardRepository.existsById(ward.getId()))
+        if (wardRepository.existsById(id))
         {
-            wardRepository.delete(ward);
+            wardRepository.delete(wardRepository.findById(id).get());
             return true;
         }
         else return false;

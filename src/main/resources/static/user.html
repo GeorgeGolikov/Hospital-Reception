@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Приёмное отделение больницы</title>
+
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+<body>
+
+<button onclick="window.location.href = '/'">Log out</button>
+
+<h2>People list</h2>
+
+<table id="peopleList">
+</table>
+
+<form action="#">
+    <input id="person_name" placeholder="Name">
+    <input id="person_surname" placeholder="Last name">
+    <input id="person_father_name" placeholder="Father name">
+    <input id="person_diagnosis" placeholder="Diagnosis">
+    <input id="person_ward" placeholder="Ward">
+    <button onclick="addPerson()">Add person</button>
+</form>
+
+<input id="search_people_field">
+<button onclick="searchByIdPeople()">Search by id</button>
+
+<h2>Diagnosis list</h2>
+
+<table id="diagnosisList">
+</table>
+
+<input id="search_diagnosis_field">
+<button onclick="searchByIdDiagnosis()">Search by id</button>
+
+<h2>Wards list</h2>
+
+<table id="wardsList">
+</table>
+
+<input id="search_wards_field">
+<button onclick="searchByIdWard()">Search by id</button>
+
+<script>
+    function getUserToken() {
+        let xmlhttp = new XMLHttpRequest();
+        let token = 'a';
+
+        xmlhttp.onreadystatechange = function()
+        {
+            if (this.readyState == 4 && this.status == 200) {
+                token = JSON.parse(this.responseText).token;
+            }
+        };
+        xmlhttp.open("POST", "http://localhost:8080/hospital/auth/signin", false);
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.send(JSON.stringify({userName: "user", password: "pwd"}));
+
+        return token;
+    }
+
+    function searchByIdPeople() {
+        let id = document.getElementById("search_people_field").value;
+
+        let xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                let person = JSON.parse(this.responseText);
+                let html = '<tr>\n' +
+                    '        <th>ID</th>\n' +
+                    '        <th>Name</th>\n' +
+                    '        <th>Last name</th>\n' +
+                    '<th>Father name</th>\n' +
+                    '<th>Diagnosis</th>\n' +
+                    '<th>Ward</th>\n' +
+                    '    </tr>';
+
+                html = html + '<tr><td>' + person.id + '</td>\n' +
+                    '        <td>' + person.firstName + '</td>\n' +
+                    '        <td>' + person.lastName + '</td>\n' +
+                    '        <td>' + person.fatherName + '</td>\n' +
+                    '        <td>' + person.diagnosis + '</td>\n' +
+                    '        <td>' + person.ward + '</td>\n' +
+                    '        <td><button onclick="deletePerson(' + person.id + ')">Delete</button></td></tr>';
+
+                document.getElementById("peopleList").innerHTML = html;
+            }
+        };
+        xmlhttp.open("GET", "http://localhost:8080/people/peopleShowAll/" + id.toString(), false);
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+        xmlhttp.send();
+    }
+
+    function searchByIdDiagnosis() {
+        let id = document.getElementById("search_diagnosis_field").value;
+
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                let diagnosis = JSON.parse(this.responseText);
+                let html = '<tr>\n' +
+                    '        <th>ID</th>\n' +
+                    '        <th>Name</th>\n' +
+                    '    </tr>';
+
+                html = html + '<tr><td>' + diagnosis.id + '</td>\n' +
+                    '        <td>' + diagnosis.name + '</td>\n' +
+                    '       </tr>';
+
+                document.getElementById("diagnosisList").innerHTML = html;
+            }
+        };
+        xhttp.open('GET', 'http://localhost:8080/diagnosis/diagnosisShow/' + id.toString(), true);
+        xhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+        xhttp.send();
+    }
+
+    function searchByIdWard() {
+        let id = document.getElementById("search_wards_field").value;
+
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                let ward = JSON.parse(this.responseText);
+                let html = '<tr>\n' +
+                    '        <th>ID</th>\n' +
+                    '        <th>Name</th>\n' +
+                    '        <th>Max Count</th>\n' +
+                    '    </tr>';
+
+                html = html + '<tr><td>' + ward.id + '</td>\n' +
+                    '        <td>' + ward.name + '</td>\n' +
+                    '        <td>' + ward.maxCount + '</td>\n' +
+                    '       </tr>';
+
+                document.getElementById("wardsList").innerHTML = html;
+            }
+        };
+        xhttp.open('GET', 'http://localhost:8080/wards/wardsShowAll/' + id.toString(), true);
+        xhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+        xhttp.send();
+    }
+
+    function deletePerson(personId) {
+        let xhttp = new XMLHttpRequest();
+        xhttp.open("DELETE", "http://localhost:8080/people/deletePerson/" + personId, false);
+        xhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+        xhttp.send();
+
+        loadPeople();
+    }
+
+    function addPerson() {
+        let name = document.getElementById("person_name").value;
+        let surname = document.getElementById("person_surname").value;
+        let fathername = document.getElementById("person_father_name").value;
+        let diagnosis = document.getElementById("person_diagnosis").value;
+        let ward = document.getElementById("person_ward").value;
+
+        let xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("POST", "http://localhost:8080/people/addPerson", false);
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+        xmlhttp.send(JSON.stringify({firstName: name, lastName: surname}));
+
+        loadPeople();
+    }
+
+    function loadPeople() {
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                let people = JSON.parse(this.responseText);
+                let html = '<tr>\n' +
+                    '        <th>ID</th>\n' +
+                    '        <th>Name</th>\n' +
+                    '        <th>Last name</th>\n' +
+                    '<th>Father name</th>\n' +
+                    '<th>Diagnosis</th>\n' +
+                    '<th>Ward</th>\n' +
+                    '    </tr>';
+                for (let i = 0; i < people.length; i++)
+                {
+                    let person = people[i];
+                    html = html + '<tr><td>' + person.id + '</td>\n' +
+                        '        <td>' + person.firstName + '</td>\n' +
+                        '        <td>' + person.lastName + '</td>\n' +
+                        '        <td>' + person.fatherName + '</td>\n' +
+                        '        <td>' + person.diagnosis + '</td>\n' +
+                        '        <td>' + person.ward + '</td>\n' +
+                        '        <td><button onclick="deletePerson(' + person.id + ')">Delete</button></td></tr>';
+                }
+                document.getElementById("peopleList").innerHTML = html;
+            }
+        };
+        xhttp.open('GET', 'http://localhost:8080/people/peopleShowAll', true);
+        xhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+        xhttp.send();
+    }
+
+    function loadDiagnosis() {
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                let diagnosis = JSON.parse(this.responseText);
+                let html = '<tr>\n' +
+                    '        <th>ID</th>\n' +
+                    '        <th>Name</th>\n' +
+                    '    </tr>';
+                for (let i = 0; i < diagnosis.length; i++)
+                {
+                    let diag = diagnosis[i];
+                    html = html + '<tr><td>' + diag.id + '</td>\n' +
+                        '        <td>' + diag.name + '</td>\n' +
+                        '       </tr>';
+                }
+                document.getElementById("diagnosisList").innerHTML = html;
+            }
+        };
+        xhttp.open('GET', 'http://localhost:8080/diagnosis/diagnosisShowAll', true);
+        xhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+        xhttp.send();
+    }
+
+    function loadWards() {
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                let wards = JSON.parse(this.responseText);
+                let html = '<tr>\n' +
+                    '        <th>ID</th>\n' +
+                    '        <th>Name</th>\n' +
+                    '        <th>Max Count</th>\n' +
+                    '    </tr>';
+                for (let i = 0; i < wards.length; i++)
+                {
+                    let ward = wards[i];
+                    html = html + '<tr><td>' + ward.id + '</td>\n' +
+                        '        <td>' + ward.name + '</td>\n' +
+                        '        <td>' + ward.maxCount + '</td>\n' +
+                        '       </tr>';
+                }
+                document.getElementById("wardsList").innerHTML = html;
+            }
+        };
+        xhttp.open('GET', 'http://localhost:8080/wards/wardsShowAll', true);
+        xhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+        xhttp.send();
+    }
+
+    loadPeople();
+    loadDiagnosis();
+    loadWards();
+</script>
+
+</body>
+</html>

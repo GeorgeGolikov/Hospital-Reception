@@ -8,6 +8,6 @@ public interface DiagnosisService
     List<Diagnosis> listOfDiagnosis();
     Diagnosis findDiagnosis(int id);
     void addDiagnosis(Diagnosis diagnosis);
-    boolean deleteDiagnosis(Diagnosis diagnosis);
+    boolean deleteDiagnosis(Integer id);
     boolean editDiagnosis(Integer id, Diagnosis newDiagnosis);
 }

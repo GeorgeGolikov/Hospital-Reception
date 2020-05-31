@@ -8,6 +8,6 @@ public interface PeopleService
     List<Person> listOfPeople();
     Person findPerson(int id);
     void addPerson(Person person);
-    boolean deletePerson(Person person);
+    boolean deletePerson(Integer id);
     boolean editPerson(Integer id, Person newPerson);
 }

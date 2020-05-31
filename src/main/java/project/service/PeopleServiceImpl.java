@@ -1,12 +1,15 @@
 package project.service;
 
+import project.entity.Diagnosis;
 import project.entity.Person;
+import project.entity.Ward;
 import project.repository.PeopleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Set;
 
 // Сервис - это реализация паттерна "Фасад"
 
@@ -19,7 +22,15 @@ public class PeopleServiceImpl implements PeopleService
     @Override
     public List<Person> listOfPeople()
     {
-        return (List<Person>) peopleRepository.findAll();
+        List<Person> peopleList = (List<Person>) peopleRepository.findAll();
+        peopleList.forEach(p -> {
+            Set<Diagnosis> diagnosisList = p.getDiagnosis();
+            Ward ward = p.getWard();
+
+            diagnosisList.forEach(d -> d.setPeople(null));
+            if (ward != null) ward.setPeople(null);
+        });
+        return peopleList;
     }
 
     @Override
@@ -27,7 +38,13 @@ public class PeopleServiceImpl implements PeopleService
     {
         if (peopleRepository.existsById(id))
         {
-            return peopleRepository.findById(id).get();
+            Person person = peopleRepository.findById(id).get();
+            Set<Diagnosis> diagnosisList = person.getDiagnosis();
+            Ward ward = person.getWard();
+            diagnosisList.forEach(d -> d.setPeople(null));
+            if (ward != null) ward.setPeople(null);
+
+            return person;
         }
         return null;
     }

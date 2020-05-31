@@ -34,8 +34,10 @@ public class DiagnosisController
     @PostMapping("/addDiagnosis")
     public ResponseEntity<?> addDiagnosis(@RequestBody Diagnosis diagnosis)
     {
-        diagnosisService.addDiagnosis(diagnosis);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        final boolean added = diagnosisService.addDiagnosis(diagnosis);
+        return added
+                ? new ResponseEntity<>(HttpStatus.CREATED)
+                : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
     }
 
     @DeleteMapping("/deleteDiagnosis/{id}")

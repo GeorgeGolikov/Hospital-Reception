@@ -81,9 +81,24 @@
         let id = document.getElementById("search_people_field").value;
 
         let xmlhttp = new XMLHttpRequest();
+
+        xmlhttp.open("GET", "http://localhost:8080/people/peopleShowAll/" + id.toString(), false);
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+
         xmlhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 let person = JSON.parse(this.responseText);
+
+                let diags = "";
+                let ward = "";
+                if (person.ward != null) ward = person.ward.name;
+
+                for (let i = 0; i < person.diagnosis.length; i++) {
+                    diags += person.diagnosis[i].name;
+                    diags += "; ";
+                }
+
                 let html = '<tr>\n' +
                     '        <th>ID</th>\n' +
                     '        <th>Name</th>\n' +
@@ -97,16 +112,17 @@
                     '        <td>' + person.firstName + '</td>\n' +
                     '        <td>' + person.lastName + '</td>\n' +
                     '        <td>' + person.fatherName + '</td>\n' +
-                    '        <td>' + person.diagnosis + '</td>\n' +
-                    '        <td>' + person.ward + '</td>\n' +
+                    '        <td>' + diags + '</td>\n' +
+                    '        <td>' + ward + '</td>\n' +
                     '        <td><button onclick="deletePerson(' + person.id + ')">Delete</button></td></tr>';
 
                 document.getElementById("peopleList").innerHTML = html;
             }
+            else {
+                alert("Wrong input!");
+            }
         };
-        xmlhttp.open("GET", "http://localhost:8080/people/peopleShowAll/" + id.toString(), false);
-        xmlhttp.setRequestHeader("Content-Type", "application/json");
-        xmlhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+
         xmlhttp.send();
     }
 
@@ -114,6 +130,10 @@
         let id = document.getElementById("search_diagnosis_field").value;
 
         let xhttp = new XMLHttpRequest();
+
+        xhttp.open('GET', 'http://localhost:8080/diagnosis/diagnosisShow/' + id.toString(), false);
+        xhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 let diagnosis = JSON.parse(this.responseText);
@@ -128,9 +148,11 @@
 
                 document.getElementById("diagnosisList").innerHTML = html;
             }
+            else {
+                alert("Wrong input!");
+            }
         };
-        xhttp.open('GET', 'http://localhost:8080/diagnosis/diagnosisShow/' + id.toString(), true);
-        xhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+
         xhttp.send();
     }
 
@@ -138,6 +160,10 @@
         let id = document.getElementById("search_wards_field").value;
 
         let xhttp = new XMLHttpRequest();
+
+        xhttp.open('GET', 'http://localhost:8080/wards/wardsShowAll/' + id.toString(), false);
+        xhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 let ward = JSON.parse(this.responseText);
@@ -154,9 +180,11 @@
 
                 document.getElementById("wardsList").innerHTML = html;
             }
+            else {
+                alert("Wrong input!");
+            }
         };
-        xhttp.open('GET', 'http://localhost:8080/wards/wardsShowAll/' + id.toString(), true);
-        xhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+
         xhttp.send();
     }
 
@@ -176,11 +204,126 @@
         let diagnosis = document.getElementById("person_diagnosis").value;
         let ward = document.getElementById("person_ward").value;
 
-        let xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("POST", "http://localhost:8080/people/addPerson", false);
-        xmlhttp.setRequestHeader("Content-Type", "application/json");
-        xmlhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
-        xmlhttp.send(JSON.stringify({firstName: name, lastName: surname}));
+        let diagnosisName = null;
+        let diagnosisId = null;
+        if (diagnosis != null) {
+            let table = document.getElementById("diagnosisList");
+            let rowLength = table.rows.length;
+
+            for (let i = 0; i < rowLength; i++){
+
+                //gets cells of current row
+                let cells = table.rows.item(i).cells;
+
+                //gets amount of cells of current row
+                let cellsLength = cells.length;
+
+                //loops through each cell in current row
+                for(let j = 0; j < cellsLength; j++) {
+                    let cellVal = cells.item(j).innerHTML;
+                    if (diagnosis === cellVal) {
+                        diagnosisName = cellVal;
+                        diagnosisId = cells.item(0).innerHTML;
+                    }
+                }
+            }
+        }
+
+        let wardName = null;
+        let wardId = null;
+        let wardMaxCount = null;
+        if (ward != null) {
+            let table = document.getElementById("wardsList");
+            let rowLength = table.rows.length;
+
+            for (let i = 0; i < rowLength; i++){
+
+                //gets cells of current row
+                let cells = table.rows.item(i).cells;
+
+                //gets amount of cells of current row
+                let cellsLength = cells.length;
+
+                //loops through each cell in current row
+                for(let j = 0; j < cellsLength; j++) {
+                    let cellVal = cells.item(j).innerHTML;
+                    if (ward === cellVal) {
+                        wardName = cellVal;
+                        wardId = cells.item(0).innerHTML;
+                        wardMaxCount = cells.item(2).innerHTML;
+                    }
+                }
+            }
+        }
+
+        let jsonRequest = null;
+        if (name == null || surname == null) alert("Name or surname cannot be null!");
+        else if (diagnosis == '' && ward == '') {
+            if (fathername != null) jsonRequest = JSON.stringify({firstName: name, lastName: surname, fatherName: fathername});
+            else jsonRequest = JSON.stringify({firstName: name, lastName: surname});
+        }
+        else {
+            if (diagnosis != '' && ward != '') {
+                if (diagnosisName != null && wardName != null) {
+                    jsonRequest = JSON.stringify({
+                        firstName: name,
+                        lastName: surname,
+                        fatherName: fathername,
+                        diagnosis: [
+                            {
+                                id: diagnosisId,
+                                name: diagnosisName
+                            }
+                        ],
+                        ward: {
+                            id: wardId,
+                            name: wardName,
+                            maxCount: wardMaxCount
+                        }
+                    });
+                }
+                else alert("Diagnosis or ward name is invalid!")
+            }
+            else if (diagnosis != '') {
+                if (diagnosisName != null) {
+                    jsonRequest = JSON.stringify({
+                        firstName: name,
+                        lastName: surname,
+                        fatherName: fathername,
+                        diagnosis: [
+                            {
+                                id: diagnosisId,
+                                name: diagnosisName
+                            }
+                        ]
+                    });
+                }
+                else alert("Wrong diagnosis name!");
+            }
+            else if (ward != '') {
+                if (wardName != null) {
+                    jsonRequest = JSON.stringify({
+                        firstName: name,
+                        lastName: surname,
+                        fatherName: fathername,
+                        ward: {
+                            id: wardId,
+                            name: wardName,
+                            maxCount: wardMaxCount
+                        }
+                    });
+                }
+                else alert("Wrong ward name!");
+            }
+        }
+
+        if (jsonRequest != null) {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", "http://localhost:8080/people/addPerson", false);
+            xmlhttp.setRequestHeader("Content-Type", "application/json");
+            xmlhttp.setRequestHeader("Authorization", "Bearer " + getUserToken());
+            xmlhttp.send(jsonRequest);
+        }
 
         loadPeople();
     }
@@ -201,12 +344,21 @@
                 for (let i = 0; i < people.length; i++)
                 {
                     let person = people[i];
+                    let diags = "";
+                    let ward = "";
+                    if (person.ward != null) ward = person.ward.name;
+
+                    for (let i = 0; i < person.diagnosis.length; i++) {
+                        diags += person.diagnosis[i].name;
+                        diags += "; ";
+                    }
+
                     html = html + '<tr><td>' + person.id + '</td>\n' +
                         '        <td>' + person.firstName + '</td>\n' +
                         '        <td>' + person.lastName + '</td>\n' +
                         '        <td>' + person.fatherName + '</td>\n' +
-                        '        <td>' + person.diagnosis + '</td>\n' +
-                        '        <td>' + person.ward + '</td>\n' +
+                        '        <td>' + diags + '</td>\n' +
+                        '        <td>' + ward + '</td>\n' +
                         '        <td><button onclick="deletePerson(' + person.id + ')">Delete</button></td></tr>';
                 }
                 document.getElementById("peopleList").innerHTML = html;

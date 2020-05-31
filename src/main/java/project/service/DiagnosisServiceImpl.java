@@ -1,11 +1,13 @@
 package project.service;
 
 import project.entity.Diagnosis;
+import project.entity.Ward;
 import project.repository.DiagnosisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,7 +19,9 @@ public class DiagnosisServiceImpl implements DiagnosisService
     @Override
     public List<Diagnosis> listOfDiagnosis()
     {
-        return (List<Diagnosis>) diagnosisRepository.findAll();
+        List<Diagnosis> diagnosisList = (List<Diagnosis>) diagnosisRepository.findAll();
+        diagnosisList.forEach(d -> d.setPeople(null));
+        return diagnosisList;
     }
 
     @Override
@@ -31,9 +35,19 @@ public class DiagnosisServiceImpl implements DiagnosisService
     }
 
     @Override
-    public void addDiagnosis(Diagnosis diagnosis)
+    public boolean addDiagnosis(Diagnosis diagnosis)
     {
-        diagnosisRepository.save(diagnosis);
+        List<Diagnosis> allDiagnosis = (List<Diagnosis>) diagnosisRepository.findAll();
+        List<String> allDiagnosisNames = new ArrayList<>();
+        allDiagnosis.forEach(d -> allDiagnosisNames.add(d.getName()));
+        int index = allDiagnosisNames.indexOf(diagnosis.getName());
+
+        if (index == -1)
+        {
+            diagnosisRepository.save(diagnosis);
+            return true;
+        }
+        else return false;
     }
 
     @Override

@@ -34,8 +34,10 @@ public class WardController
     @PostMapping("/addWard")
     public ResponseEntity<?> addWard(@RequestBody Ward ward)
     {
-        wardService.addWard(ward);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        final boolean added = wardService.addWard(ward);
+        return added
+                ? new ResponseEntity<>(HttpStatus.CREATED)
+                : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
     }
 
     @DeleteMapping("/deleteWard/{id}")

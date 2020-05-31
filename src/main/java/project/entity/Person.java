@@ -8,17 +8,13 @@ import java.util.Set;
 public class Person
 {
     @Id
-//    @Column(name = "ID")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-//    @Column(name = "FIRST_NAME")
     private String firstName;
 
-//    @Column(name = "LAST_NAME")
     private String lastName;
 
-//    @Column(name = "FATHER_NAME")
     private String fatherName;
 
     // диагноз - внешний ключ

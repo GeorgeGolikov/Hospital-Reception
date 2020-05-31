@@ -1,11 +1,13 @@
 package project.service;
 
+import project.entity.Diagnosis;
 import project.entity.Ward;
 import project.repository.WardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,7 +19,9 @@ public class WardServiceImpl implements WardService
     @Override
     public List<Ward> listOfWards()
     {
-        return (List<Ward>) wardRepository.findAll();
+        List<Ward> wardsList = (List<Ward>) wardRepository.findAll();
+        wardsList.forEach(w -> w.setPeople(null));
+        return wardsList;
     }
 
     @Override
@@ -31,9 +35,19 @@ public class WardServiceImpl implements WardService
     }
 
     @Override
-    public void addWard(Ward ward)
+    public boolean addWard(Ward ward)
     {
-        wardRepository.save(ward);
+        List<Ward> allWards = (List<Ward>) wardRepository.findAll();
+        List<String> allWardsNames = new ArrayList<>();
+        allWards.forEach(w -> allWardsNames.add(w.getName()));
+        int index = allWardsNames.indexOf(ward.getName());
+
+        if (index == -1)
+        {
+            wardRepository.save(ward);
+            return true;
+        }
+        else return false;
     }
 
     @Override

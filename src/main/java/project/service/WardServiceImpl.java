@@ -20,7 +20,12 @@ public class WardServiceImpl implements WardService
     public List<Ward> listOfWards()
     {
         List<Ward> wardsList = (List<Ward>) wardRepository.findAll();
-        wardsList.forEach(w -> w.setPeople(null));
+        wardsList.forEach(w -> {
+            w.getPeople().forEach(p -> {
+                Ward wi = p.getWard();
+                if (wi != null) wi.setPeople(null);
+            });
+        });
         return wardsList;
     }
 
@@ -29,7 +34,12 @@ public class WardServiceImpl implements WardService
     {
         if (wardRepository.existsById(id))
         {
-            return wardRepository.findById(id).get();
+            Ward ward = wardRepository.findById(id).get();
+            ward.getPeople().forEach(p -> {
+                Ward w = p.getWard();
+                if (w != null) w.setPeople(null);
+            });
+            return ward;
         }
         return null;
     }

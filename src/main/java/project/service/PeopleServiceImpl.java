@@ -27,8 +27,24 @@ public class PeopleServiceImpl implements PeopleService
             Set<Diagnosis> diagnosisList = p.getDiagnosis();
             Ward ward = p.getWard();
 
-            diagnosisList.forEach(d -> d.setPeople(null));
-            if (ward != null) ward.setPeople(null);
+            diagnosisList.forEach(d -> {
+                Set<Person> personSet = d.getPeople();
+                if (personSet != null)
+                    personSet.forEach(pe -> {
+                    Set<Diagnosis> diagnosisSet = pe.getDiagnosis();
+                    diagnosisSet.forEach(di -> {
+                        if (di != null) di.setPeople(null);
+                    });
+                });
+            });
+            if (ward != null) {
+                Set<Person> personSet = ward.getPeople();
+                if (personSet != null)
+                    personSet.forEach(pe -> {
+                    Ward wi = pe.getWard();
+                    if (wi != null) wi.setPeople(null);
+                });
+            };
         });
         return peopleList;
     }

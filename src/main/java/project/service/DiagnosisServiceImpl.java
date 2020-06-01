@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class DiagnosisServiceImpl implements DiagnosisService
@@ -20,7 +21,14 @@ public class DiagnosisServiceImpl implements DiagnosisService
     public List<Diagnosis> listOfDiagnosis()
     {
         List<Diagnosis> diagnosisList = (List<Diagnosis>) diagnosisRepository.findAll();
-        diagnosisList.forEach(d -> d.setPeople(null));
+        diagnosisList.forEach(d -> {
+            d.getPeople().forEach(p -> {
+                Set<Diagnosis> diagnosisSet = p.getDiagnosis();
+                diagnosisSet.forEach(di -> {
+                    if (di != null) di.setPeople(null);
+                });
+            });
+        });
         return diagnosisList;
     }
 
@@ -29,7 +37,14 @@ public class DiagnosisServiceImpl implements DiagnosisService
     {
         if (diagnosisRepository.existsById(id))
         {
-            return diagnosisRepository.findById(id).get();
+            Diagnosis diagnosis = diagnosisRepository.findById(id).get();
+            diagnosis.getPeople().forEach(p -> {
+                Set<Diagnosis> diagnosisList = p.getDiagnosis();
+                diagnosisList.forEach(d -> {
+                    if (d != null) d.setPeople(null);
+                });
+            });
+            return diagnosis;
         }
         return null;
     }
